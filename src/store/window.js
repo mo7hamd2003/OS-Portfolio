@@ -1,0 +1,37 @@
+import { create } from 'zustand'
+import {immer} from "zustand/middleware/immer";
+import {INITIAL_Z_INDEX, WINDOW_CONFIG} from "#constants/index.js";
+
+const useWindowStore = create(
+    immer((set) => ({
+        windows: WINDOW_CONFIG,
+        nextZIndex: INITIAL_Z_INDEX + 1,
+
+        openWindow: (windowKey, data = null) =>
+            set((state) => {
+                const win = state.windows[windowKey];
+                if(!win) return;
+                win.isOpen = true;
+                win.zIndex = state.zIndex;
+                win.data = data ?? win.data;
+                state.zIndex++; // Other windows appears on top of each others.
+        }),
+
+        closeWindow: (windowKey) =>
+            set((state) => {
+                const win = state.windows[windowKey];
+                if(!win) return;
+                win.isOpen = false;
+                win.zIndex = INITIAL_Z_INDEX;
+                win.data = null;
+        }),
+
+        focusWindow: (windowKey) =>
+            set((state) => {
+                const win = state.windows[windowKey];
+                win.zIndex = state.zIndex++;
+        }),
+    })),
+);
+
+export default useWindowStore;
